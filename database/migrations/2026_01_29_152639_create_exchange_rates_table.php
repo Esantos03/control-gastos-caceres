@@ -14,9 +14,15 @@ return new class extends Migration
         Schema::create('exchange_rates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('currency_id')->constrained()->cascadeOnDelete();
-            $table->decimal('rate', 10, 2);
-            $table->date('date');
+            $table->integer('month'); // 1-12
+            $table->integer('year');
+            $table->decimal('buy_rate', 10, 4);
+            $table->decimal('sell_rate', 10, 4);
+            $table->decimal('average_rate', 10, 4);
             $table->timestamps();
+            
+            // Índice único para evitar duplicados de moneda/mes/año
+            $table->unique(['currency_id', 'month', 'year']);
         });
 
     }
