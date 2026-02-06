@@ -1,59 +1,281 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 💰 Control de Gastos Cáceres
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema avanzado de control de gastos personales desarrollado con Laravel 12 y Filament 5. Diseñado para replicar y mejorar la funcionalidad de hojas de cálculo Excel con una interfaz moderna y funcionalidades automatizadas.
 
-## About Laravel
+## ✨ Características Principales
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 📊 Gestión de Gastos
+- ✅ Registro completo de gastos con múltiples campos
+- ✅ Tipos de gastos: Fijos, Variables y Ocasionales
+- ✅ Sistema de cuotas/pagos recurrentes
+- ✅ Conversión automática de moneda
+- ✅ Notas y estado de pago
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🏷️ Categorización Inteligente
+- ✅ Categorías con colores e iconos personalizados
+- ✅ Subcategorías organizadas
+- ✅ Presupuestos mensuales por categoría
+- ✅ Alertas de presupuesto excedido
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 💳 Gestión de Tarjetas
+- ✅ Tarjetas de crédito y débito
+- ✅ Límites de crédito
+- ✅ Días de corte y pago
+- ✅ Seguimiento de uso de crédito
 
-## Learning Laravel
+### 💱 Multi-Moneda
+- ✅ Soporte para múltiples monedas
+- ✅ Tasas de cambio mensuales
+- ✅ Conversión automática a moneda base (DOP)
+- ✅ Historial de tasas
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 📈 Dashboard y Reportes
+- ✅ Widgets informativos
+- ✅ Estadísticas en tiempo real
+- ✅ Resumen de gastos por tarjeta
+- ✅ Seguimiento de tasas de cambio
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🚀 Instalación
 
-## Laravel Sponsors
+### Requisitos Previos
+- PHP 8.2 o superior
+- Composer
+- Node.js y NPM
+- SQLite/MySQL/PostgreSQL
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Pasos de Instalación
 
-### Premium Partners
+1. **Clonar el repositorio**
+```bash
+git clone <repository-url>
+cd control-gastos-caceres
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Instalar dependencias de PHP**
+```bash
+composer install
+```
 
-## Contributing
+3. **Instalar dependencias de Node**
+```bash
+npm install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Configurar el entorno**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+5. **Configurar la base de datos**
+Editar `.env` y configurar la conexión a la base de datos:
+```env
+DB_CONNECTION=sqlite
+# O para MySQL:
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=control_gastos
+# DB_USERNAME=root
+# DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+6. **Ejecutar migraciones**
+```bash
+php artisan migrate
+```
 
-## Security Vulnerabilities
+7. **Crear usuario administrador**
+```bash
+php artisan make:filament-user
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+8. **Compilar assets**
+```bash
+npm run build
+```
 
-## License
+9. **Iniciar el servidor**
+```bash
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+10. **Acceder al panel**
+Abrir navegador en: `http://localhost:8000/admin`
+
+## 📚 Documentación
+
+- **[ANALISIS_COMPLETO_PROYECTO.md](ANALISIS_COMPLETO_PROYECTO.md)** - Análisis exhaustivo del proyecto
+- **[MEJORAS_IMPLEMENTADAS.md](MEJORAS_IMPLEMENTADAS.md)** - Historial de mejoras
+- **[ANALISIS_EXCEL.md](ANALISIS_EXCEL.md)** - Análisis del Excel original
+- **[FILAMENT_SETUP.md](FILAMENT_SETUP.md)** - Configuración de Filament
+
+## 🏗️ Arquitectura
+
+### Estructura del Proyecto
+```
+app/
+├── Filament/           # Recursos de Filament
+│   ├── Pages/         # Páginas personalizadas
+│   ├── Resources/     # Recursos CRUD
+│   └── Widgets/       # Widgets del dashboard
+├── Models/            # Modelos Eloquent
+├── Services/          # Lógica de negocio
+│   ├── BudgetService.php
+│   ├── ExpenseService.php
+│   └── ExchangeRateService.php
+└── Rules/             # Validaciones personalizadas
+```
+
+### Modelos Principales
+- **Expense** - Gastos
+- **Category** - Categorías
+- **Subcategory** - Subcategorías
+- **Card** - Tarjetas
+- **PaymentMethod** - Métodos de pago
+- **Currency** - Monedas
+- **ExchangeRate** - Tasas de cambio
+- **Merchant** - Comercios
+
+## 🔧 Servicios
+
+### ExpenseService
+Gestión de gastos con conversión automática de moneda y generación de cuotas.
+
+```php
+$expenseService->create([
+    'amount' => 1000,
+    'currency_id' => 1,
+    'expense_date' => now(),
+    // exchange_rate y amount_converted se calculan automáticamente
+]);
+```
+
+### BudgetService
+Control de presupuestos con alertas automáticas.
+
+```php
+$budgetService->isBudgetExceeded($categoryId);
+$budgetService->getBudgetUsagePercentage($categoryId);
+```
+
+### ExchangeRateService
+Gestión de tasas de cambio con cache.
+
+```php
+$rate = $exchangeRateService->getRate($currencyId, $date, 'average');
+$converted = $exchangeRateService->convert($amount, $currencyId, $date);
+```
+
+## 🧪 Testing
+
+```bash
+# Ejecutar todos los tests
+php artisan test
+
+# Ejecutar tests específicos
+php artisan test --filter ExpenseTest
+
+# Con cobertura
+php artisan test --coverage
+```
+
+## 🛠️ Comandos Útiles
+
+```bash
+# Limpiar cache
+php artisan optimize:clear
+
+# Regenerar cache
+php artisan optimize
+
+# Ver rutas
+php artisan route:list
+
+# Crear nuevo recurso de Filament
+php artisan make:filament-resource NombreModelo --generate
+
+# Refrescar base de datos (¡CUIDADO! Elimina datos)
+php artisan migrate:fresh --seed
+```
+
+## 📊 Características Avanzadas
+
+### Conversión Automática de Moneda
+El sistema busca automáticamente la tasa de cambio del mes correspondiente y convierte los montos a la moneda base (DOP).
+
+### Sistema de Cuotas
+Genera automáticamente cuotas mensuales para gastos a plazos, manteniendo la relación con el gasto padre.
+
+### Alertas de Presupuesto
+Notifica cuando se alcanza el 80%, 90% o 100% del presupuesto mensual de una categoría.
+
+### Cache Inteligente
+Las tasas de cambio y estadísticas se cachean para mejorar el rendimiento.
+
+## 🔐 Seguridad
+
+- ✅ CSRF Protection habilitado
+- ✅ XSS Protection mediante Blade
+- ✅ SQL Injection Protection con Eloquent
+- ✅ Validaciones robustas en formularios
+- ⚠️ Implementar Policies para autorización (pendiente)
+
+## 🚧 Roadmap
+
+### Fase 1 - Completada ✅
+- [x] Estructura base con Laravel y Filament
+- [x] Modelos y migraciones
+- [x] CRUD completo
+- [x] Sistema de cuotas
+- [x] Capa de servicios
+
+### Fase 2 - En Progreso 🔄
+- [ ] Sistema de reportes avanzados
+- [ ] Gráficos interactivos
+- [ ] Exportación a Excel/PDF
+- [ ] Notificaciones por email
+- [ ] Tests completos
+
+### Fase 3 - Planificado 📋
+- [ ] API REST
+- [ ] Multi-usuario con roles
+- [ ] Importación desde Excel
+- [ ] PWA (Progressive Web App)
+- [ ] Integración con APIs bancarias
+
+## 🤝 Contribución
+
+Las contribuciones son bienvenidas. Por favor:
+1. Fork el proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
+
+## 📝 Licencia
+
+Este proyecto es privado y de uso personal.
+
+## 👨‍💻 Autor
+
+**Control de Gastos Cáceres**  
+Desarrollado con ❤️ usando Laravel y Filament
+
+## 📞 Soporte
+
+Para preguntas o problemas:
+1. Revisar la documentación en la carpeta raíz
+2. Consultar los logs en `storage/logs/laravel.log`
+3. Verificar la configuración en `.env`
+
+## 🙏 Agradecimientos
+
+- [Laravel](https://laravel.com) - Framework PHP
+- [Filament](https://filamentphp.com) - Panel de administración
+- [Tailwind CSS](https://tailwindcss.com) - Framework CSS
+
+---
+
+**Versión:** 1.0  
+**Última actualización:** Febrero 2026
