@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Expense extends Model
 {
     protected $fillable = [
+        'user_id',
         'expense_date',
         'description',
         'amount',
@@ -38,6 +39,29 @@ class Expense extends Model
         'current_installment' => 'integer',
         'is_paid' => 'boolean',
     ];
+
+    /**
+     * Boot del modelo - Agregar Global Scope para multi-tenancy
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('user', function ($query) {
+            if (auth()->check()) {
+                $query->where('user_id', auth()->id());
+            }
+        });
+
+        static::creating(function ($model) {
+            if (auth()->check() && !$model->user_id) {
+                $model->user_id = auth()->id();
+            }
+        });
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function currency(): BelongsTo
     {

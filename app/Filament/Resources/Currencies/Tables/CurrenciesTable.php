@@ -15,6 +15,7 @@ class CurrenciesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->poll('10s')
             ->columns([
                 TextColumn::make('code')
                     ->label('Código')

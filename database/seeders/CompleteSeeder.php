@@ -66,6 +66,7 @@ class CompleteSeeder extends Seeder
         $categoryModels = [];
         foreach ($categories as $cat) {
             $category = Category::create([
+                'user_id' => $user->id,
                 'name' => $cat['name'],
                 'icon' => $cat['icon'],
                 'color' => $cat['color'],
@@ -90,13 +91,14 @@ class CompleteSeeder extends Seeder
 
             foreach ($subcategories as $subcat) {
                 Subcategory::create([
+                    'user_id' => $user->id,
                     'category_id' => $category->id,
                     'name' => $subcat,
                 ]);
             }
         }
 
-        // Métodos de pago
+        // Métodos de pago (compartidos - sin user_id)
         $paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia', 'Cheque'];
         $paymentMethodModels = [];
         foreach ($paymentMethods as $method) {
@@ -113,6 +115,7 @@ class CompleteSeeder extends Seeder
         $cardModels = [];
         foreach ($cards as $card) {
             $cardModels[$card['name']] = Card::create([
+                'user_id' => $user->id,
                 'name' => $card['name'],
                 'last_digits' => $card['digits'],
                 'type' => $card['type'],
@@ -128,7 +131,10 @@ class CompleteSeeder extends Seeder
         $merchants = ['Supermercado Nacional', 'Jumbo', 'Shell', 'Uber', 'Netflix', 'Amazon'];
         $merchantModels = [];
         foreach ($merchants as $merchant) {
-            $merchantModels[$merchant] = Merchant::create(['name' => $merchant]);
+            $merchantModels[$merchant] = Merchant::create([
+                'user_id' => $user->id,
+                'name' => $merchant
+            ]);
         }
 
         // Gastos de ejemplo (mes actual)

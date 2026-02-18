@@ -15,6 +15,7 @@ class MerchantsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->poll('10s')
             ->columns([
                 TextColumn::make('name')
                     ->label('Nombre')

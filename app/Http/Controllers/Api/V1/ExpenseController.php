@@ -11,6 +11,7 @@ use App\Services\ExpenseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 
 class ExpenseController extends Controller
 {
@@ -75,6 +76,8 @@ class ExpenseController extends Controller
      */
     public function store(StoreExpenseRequest $request): JsonResponse
     {
+        $this->authorize('create', Expense::class);
+
         try {
             $expense = $this->expenseService->create($request->validated());
 
@@ -82,10 +85,18 @@ class ExpenseController extends Controller
                 'message' => 'Gasto creado exitosamente',
                 'data' => new ExpenseResource($expense->load(['category', 'subcategory', 'card', 'currency', 'merchant', 'paymentMethod'])),
             ], 201);
-        } catch (\Exception $e) {
+        } catch (\App\Exceptions\ExpenseException $e) {
             return response()->json([
-                'message' => 'Error al crear el gasto',
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in ExpenseController@store', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'message' => 'Ocurrió un error inesperado. Por favor intente nuevamente.',
             ], 500);
         }
     }
@@ -95,6 +106,8 @@ class ExpenseController extends Controller
      */
     public function show(Expense $expense): JsonResponse
     {
+        $this->authorize('view', $expense);
+
         return response()->json([
             'data' => new ExpenseResource($expense->load(['category', 'subcategory', 'card', 'currency', 'merchant', 'paymentMethod', 'childExpenses'])),
         ]);
@@ -105,6 +118,8 @@ class ExpenseController extends Controller
      */
     public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
     {
+        $this->authorize('update', $expense);
+
         try {
             $expense = $this->expenseService->update($expense, $request->validated());
 
@@ -112,10 +127,19 @@ class ExpenseController extends Controller
                 'message' => 'Gasto actualizado exitosamente',
                 'data' => new ExpenseResource($expense->load(['category', 'subcategory', 'card', 'currency', 'merchant', 'paymentMethod'])),
             ]);
-        } catch (\Exception $e) {
+        } catch (\App\Exceptions\ExpenseException $e) {
             return response()->json([
-                'message' => 'Error al actualizar el gasto',
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error in ExpenseController@update', [
+                'user_id' => auth()->id(),
+                'expense_id' => $expense->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'message' => 'Ocurrió un error inesperado. Por favor intente nuevamente.',
             ], 500);
         }
     }
@@ -125,6 +149,8 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense): JsonResponse
     {
+        $this->authorize('delete', $expense);
+
         try {
             // Si tiene cuotas hijas, eliminarlas también
             if ($expense->hasInstallments()) {
@@ -133,13 +159,24 @@ class ExpenseController extends Controller
 
             $expense->delete();
 
+            Log::info('Expense deleted successfully', [
+                'user_id' => auth()->id(),
+                'expense_id' => $expense->id
+            ]);
+
             return response()->json([
                 'message' => 'Gasto eliminado exitosamente',
             ]);
         } catch (\Exception $e) {
+            Log::error('Error deleting expense', [
+                'user_id' => auth()->id(),
+                'expense_id' => $expense->id,
+                'error' => $e->getMessage()
+            ]);
+            
             return response()->json([
                 'message' => 'Error al eliminar el gasto',
-                'error' => $e->getMessage(),
+                'error' => 'Ocurrió un error inesperado.',
             ], 500);
         }
     }
@@ -149,6 +186,8 @@ class ExpenseController extends Controller
      */
     public function generateInstallments(Expense $expense): JsonResponse
     {
+        $this->authorize('update', $expense);
+
         try {
             $installments = $this->expenseService->generateInstallments($expense);
 
@@ -157,10 +196,19 @@ class ExpenseController extends Controller
                 'data' => ExpenseResource::collection($installments),
                 'count' => count($installments),
             ]);
-        } catch (\Exception $e) {
+        } catch (\App\Exceptions\ExpenseException $e) {
             return response()->json([
-                'message' => 'Error al generar cuotas',
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error generating installments', [
+                'user_id' => auth()->id(),
+                'expense_id' => $expense->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'message' => 'Ocurrió un error inesperado al generar las cuotas.',
             ], 500);
         }
     }

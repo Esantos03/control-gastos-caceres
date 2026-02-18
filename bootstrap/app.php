@@ -12,8 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        // Agregar middleware CORS solo a rutas API
+        $middleware->group('api', [
+            \App\Http\Middleware\HandleCors::class,
+        ]);
+
+        // Deshabilitar CSRF solo para rutas API (mantener CSRF para rutas web/Filament)
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -9,6 +9,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class ExpensesStatsWidget extends StatsOverviewWidget
 {
+    protected ?string $pollingInterval = '10s';
+
     protected function getStats(): array
     {
         $currentMonth = now()->month;

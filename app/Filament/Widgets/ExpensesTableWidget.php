@@ -14,6 +14,8 @@ class ExpensesTableWidget extends TableWidget
 
     protected static ?int $sort = 2;
 
+    protected ?string $pollingInterval = '10s';
+
     public function table(Table $table): Table
     {
         return $table

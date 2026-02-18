@@ -22,3 +22,22 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Archivos de cache compilados
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+/storage/framework/views/*.php
+!/storage/framework/views/.gitignore
+
+# Archivos de prueba
+test-*.html
+test-*.php
+
+# Archivos binarios
+*.xlsx
+*.xls
+*.pdf
+
+# Colecciones de API (pueden contener datos sensibles)
+*.postman_collection.json
+*.insomnia.json

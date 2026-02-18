@@ -44,14 +44,22 @@ class ExpenseService
                 // Verificar presupuesto y enviar alerta si es necesario
                 $this->budgetService->checkBudgetAlert($expense->category_id);
 
+                Log::info('Expense created successfully', [
+                    'user_id' => auth()->id(),
+                    'expense_id' => $expense->id,
+                    'amount' => $expense->amount_converted
+                ]);
+
                 return $expense;
             });
         } catch (\Exception $e) {
             Log::error('Error creating expense', [
+                'user_id' => auth()->id(),
+                'data' => $data,
                 'error' => $e->getMessage(),
-                'data' => $data
+                'trace' => $e->getTraceAsString()
             ]);
-            throw new \Exception('No se pudo crear el gasto: ' . $e->getMessage());
+            throw \App\Exceptions\ExpenseException::creationFailed($e->getMessage());
         }
     }
 
@@ -73,7 +81,7 @@ class ExpenseService
                             $currencyId,
                             $date,
                             'average'
-                        );
+                        ) ?? 1;
                     }
 
                     $data['amount_converted'] = round($amount * $data['exchange_rate'], 2);
@@ -84,15 +92,22 @@ class ExpenseService
                 // Verificar presupuesto
                 $this->budgetService->checkBudgetAlert($expense->category_id);
 
+                Log::info('Expense updated successfully', [
+                    'user_id' => auth()->id(),
+                    'expense_id' => $expense->id
+                ]);
+
                 return $expense->fresh();
             });
         } catch (\Exception $e) {
             Log::error('Error updating expense', [
+                'user_id' => auth()->id(),
                 'expense_id' => $expense->id,
                 'error' => $e->getMessage(),
-                'data' => $data
+                'data' => $data,
+                'trace' => $e->getTraceAsString()
             ]);
-            throw new \Exception('No se pudo actualizar el gasto: ' . $e->getMessage());
+            throw \App\Exceptions\ExpenseException::updateFailed($e->getMessage());
         }
     }
 
@@ -102,7 +117,7 @@ class ExpenseService
     public function generateInstallments(Expense $parentExpense): array
     {
         if (!$parentExpense->hasInstallments()) {
-            throw new \Exception('El gasto no tiene cuotas configuradas');
+            throw \App\Exceptions\ExpenseException::invalidInstallmentConfiguration();
         }
 
         $installments = [];
@@ -135,15 +150,23 @@ class ExpenseService
 
                     $installments[] = $installment;
                 }
+
+                Log::info('Installments generated successfully', [
+                    'user_id' => auth()->id(),
+                    'parent_expense_id' => $parentExpense->id,
+                    'installments_count' => count($installments)
+                ]);
             });
 
             return $installments;
         } catch (\Exception $e) {
             Log::error('Error generating installments', [
+                'user_id' => auth()->id(),
                 'parent_expense_id' => $parentExpense->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-            throw new \Exception('No se pudieron generar las cuotas: ' . $e->getMessage());
+            throw \App\Exceptions\ExpenseException::installmentGenerationFailed($e->getMessage());
         }
     }
 
