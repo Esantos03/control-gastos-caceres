@@ -19,6 +19,7 @@ class Expense extends Model
         'subcategory_id',
         'payment_method_id',
         'card_id',
+        'check_number',
         'merchant_id',
         'installments',
         'current_installment',

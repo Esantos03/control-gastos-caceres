@@ -97,7 +97,7 @@ class CompleteSeeder extends Seeder
         }
 
         // Métodos de pago
-        $paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia'];
+        $paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia', 'Cheque'];
         $paymentMethodModels = [];
         foreach ($paymentMethods as $method) {
             $paymentMethodModels[$method] = PaymentMethod::create(['name' => $method]);

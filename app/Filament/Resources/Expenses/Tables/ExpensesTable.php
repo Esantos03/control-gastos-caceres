@@ -60,6 +60,11 @@ class ExpensesTable
                     ->color('warning')
                     ->searchable()
                     ->toggleable(),
+                TextColumn::make('check_number')
+                    ->label('No. de Cheque')
+                    ->searchable()
+                    ->toggleable()
+                    ->placeholder('N/A'),
                 TextColumn::make('merchant.name')
                     ->label('Comercio')
                     ->searchable()

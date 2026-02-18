@@ -91,13 +91,52 @@ class ExpenseForm
                     ->label('Método de Pago')
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->live()
+                    ->afterStateUpdated(function ($state, $set) {
+                        if (!$state) return;
+                        
+                        $paymentMethod = \App\Models\PaymentMethod::find($state);
+                        if (!$paymentMethod) return;
+                        
+                        // Si no es TC (Tarjeta de Crédito), limpiar card_id
+                        if ($paymentMethod->name !== 'TC') {
+                            $set('card_id', null);
+                        }
+                        
+                        // Si no es cheque, limpiar check_number
+                        if ($paymentMethod->name !== 'CHEQUE') {
+                            $set('check_number', null);
+                        }
+                    }),
                 
                 Select::make('card_id')
                     ->relationship('card', 'name')
                     ->label('Tarjeta')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->visible(function ($get) {
+                        $paymentMethodId = $get('payment_method_id');
+                        if (!$paymentMethodId) return false;
+                        
+                        $paymentMethod = \App\Models\PaymentMethod::find($paymentMethodId);
+                        if (!$paymentMethod) return false;
+                        
+                        return $paymentMethod->name === 'TC';
+                    }),
+                
+                TextInput::make('check_number')
+                    ->label('No. de Cheque')
+                    ->maxLength(50)
+                    ->visible(function ($get) {
+                        $paymentMethodId = $get('payment_method_id');
+                        if (!$paymentMethodId) return false;
+                        
+                        $paymentMethod = \App\Models\PaymentMethod::find($paymentMethodId);
+                        if (!$paymentMethod) return false;
+                        
+                        return $paymentMethod->name === 'CHEQUE';
+                    }),
                 
                 Select::make('merchant_id')
                     ->relationship('merchant', 'name')

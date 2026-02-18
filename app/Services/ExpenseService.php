@@ -24,16 +24,19 @@ class ExpenseService
                 // Auto-calcular tasa de cambio si no se proporciona
                 if (empty($data['exchange_rate'])) {
                     $date = Carbon::parse($data['expense_date']);
-                    $data['exchange_rate'] = $this->exchangeRateService->getRate(
+                    $exchangeRate = $this->exchangeRateService->getRate(
                         $data['currency_id'],
                         $date,
                         'average'
                     );
+                    // Si no se encuentra tasa de cambio, usar 1 como default
+                    $data['exchange_rate'] = $exchangeRate ?? 1;
                 }
 
-                // Auto-calcular monto convertido
-                if (empty($data['amount_converted']) && !empty($data['exchange_rate'])) {
-                    $data['amount_converted'] = round($data['amount'] * $data['exchange_rate'], 2);
+                // Auto-calcular monto convertido (siempre calcular si no se proporciona)
+                if (empty($data['amount_converted'])) {
+                    $exchangeRate = $data['exchange_rate'] ?? 1;
+                    $data['amount_converted'] = round($data['amount'] * $exchangeRate, 2);
                 }
 
                 $expense = Expense::create($data);
