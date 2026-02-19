@@ -28,17 +28,11 @@ class RequiresCardPaymentMethod implements ValidationRule
             return;
         }
 
-        // Verificar que el método de pago sea compatible con tarjetas
+        // Verificar que el método de pago requiera tarjeta
         $paymentMethod = PaymentMethod::find($this->paymentMethodId);
         
-        if ($paymentMethod && !in_array(strtolower($paymentMethod->name), [
-            'tarjeta de crédito',
-            'tarjeta de débito',
-            'tarjeta',
-            'credito',
-            'debito'
-        ])) {
-            $fail('Solo puede seleccionar una tarjeta si el método de pago es Tarjeta de Crédito o Débito.');
+        if ($paymentMethod && !$paymentMethod->requires_card) {
+            $fail('Solo puede adicionar una tarjeta si el método de pago lo requiere.');
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Expense;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -45,7 +46,7 @@ class ExpenseService
                 $this->budgetService->checkBudgetAlert($expense->category_id);
 
                 Log::info('Expense created successfully', [
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'expense_id' => $expense->id,
                     'amount' => $expense->amount_converted
                 ]);
@@ -54,7 +55,7 @@ class ExpenseService
             });
         } catch (\Exception $e) {
             Log::error('Error creating expense', [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'data' => $data,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -93,7 +94,7 @@ class ExpenseService
                 $this->budgetService->checkBudgetAlert($expense->category_id);
 
                 Log::info('Expense updated successfully', [
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'expense_id' => $expense->id
                 ]);
 
@@ -101,7 +102,7 @@ class ExpenseService
             });
         } catch (\Exception $e) {
             Log::error('Error updating expense', [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'expense_id' => $expense->id,
                 'error' => $e->getMessage(),
                 'data' => $data,
@@ -152,7 +153,7 @@ class ExpenseService
                 }
 
                 Log::info('Installments generated successfully', [
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'parent_expense_id' => $parentExpense->id,
                     'installments_count' => count($installments)
                 ]);
@@ -161,7 +162,7 @@ class ExpenseService
             return $installments;
         } catch (\Exception $e) {
             Log::error('Error generating installments', [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'parent_expense_id' => $parentExpense->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

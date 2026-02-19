@@ -99,10 +99,16 @@ class CompleteSeeder extends Seeder
         }
 
         // Métodos de pago (compartidos - sin user_id)
-        $paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia', 'Cheque'];
+        $paymentMethods = [
+            ['name' => 'Efectivo', 'requires_card' => false],
+            ['name' => 'Tarjeta de Crédito', 'requires_card' => true],
+            ['name' => 'Tarjeta de Débito', 'requires_card' => true],
+            ['name' => 'Transferencia', 'requires_card' => false],
+            ['name' => 'Cheque', 'requires_card' => false],
+        ];
         $paymentMethodModels = [];
         foreach ($paymentMethods as $method) {
-            $paymentMethodModels[$method] = PaymentMethod::create(['name' => $method]);
+            $paymentMethodModels[$method['name']] = PaymentMethod::create($method);
         }
 
         // Tarjetas

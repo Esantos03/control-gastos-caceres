@@ -12,10 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Agregar middleware CORS solo a rutas API
-        $middleware->group('api', [
-            \App\Http\Middleware\HandleCors::class,
-        ]);
+        // Agregar middleware CORS a todas las rutas
+        $middleware->append(\App\Http\Middleware\HandleCors::class);
 
         // Deshabilitar CSRF solo para rutas API (mantener CSRF para rutas web/Filament)
         $middleware->validateCsrfTokens(except: [

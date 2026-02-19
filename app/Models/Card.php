@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 class Card extends Model
 {
@@ -34,14 +36,14 @@ class Card extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('user', function ($query) {
-            if (auth()->check()) {
-                $query->where('user_id', auth()->id());
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
             }
         });
 
         static::creating(function ($model) {
-            if (auth()->check() && !$model->user_id) {
-                $model->user_id = auth()->id();
+            if (Auth::check() && !$model->user_id) {
+                $model->user_id = Auth::id();
             }
         });
     }

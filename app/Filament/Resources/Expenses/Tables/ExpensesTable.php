@@ -60,7 +60,8 @@ class ExpensesTable
                     ->badge()
                     ->color('warning')
                     ->searchable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->placeholder('N/A'),
                 TextColumn::make('check_number')
                     ->label('No. de Cheque')
                     ->searchable()

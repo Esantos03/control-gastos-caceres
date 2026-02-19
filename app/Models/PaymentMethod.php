@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentMethod extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'requires_card'];
+
+    protected $casts = [
+        'requires_card' => 'boolean',
+    ];
 
     public function expenses(): HasMany
     {
