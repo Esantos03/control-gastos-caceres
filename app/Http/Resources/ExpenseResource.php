@@ -9,6 +9,22 @@ class ExpenseResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // Calcular monto convertido dinámicamente solo para USD
+        $amountConverted = null;
+        if ($this->currency && $this->currency->code === 'USD') {
+            $latestRate = \App\Models\ExchangeRate::whereHas('currency', function ($query) {
+                $query->where('code', 'USD');
+            })
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($latestRate) {
+                $amountConverted = round($this->amount * $latestRate->average_rate, 2);
+            }
+        }
+
         return [
             'id' => $this->id,
             'expense_date' => $this->expense_date?->format('Y-m-d'),
@@ -16,11 +32,12 @@ class ExpenseResource extends JsonResource
             'amount' => (float) $this->amount,
             'currency' => new CurrencyResource($this->whenLoaded('currency')),
             'exchange_rate' => (float) $this->exchange_rate,
-            'amount_converted' => (float) $this->amount_converted,
+            'amount_converted' => $amountConverted,
             'category' => new CategoryResource($this->whenLoaded('category')),
             'subcategory' => new SubcategoryResource($this->whenLoaded('subcategory')),
             'payment_method' => new PaymentMethodResource($this->whenLoaded('paymentMethod')),
             'card' => new CardResource($this->whenLoaded('card')),
+            'card_display' => $this->card?->display_name,
             'check_number' => $this->check_number,
             'merchant' => new MerchantResource($this->whenLoaded('merchant')),
             'installments' => $this->installments,

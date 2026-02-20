@@ -34,7 +34,7 @@ class HandleCors
                 ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
                 ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-TOKEN')
                 ->header('Access-Control-Allow-Credentials', 'true')
-                ->header('Access-Control-Max-Age', '86400');
+                ->header('Access-Control-Max-Age', config('expenses.cache.cors_max_age'));
         }
 
         // Procesar la solicitud normal

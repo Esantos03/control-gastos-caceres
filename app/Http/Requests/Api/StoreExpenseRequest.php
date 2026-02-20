@@ -15,10 +15,12 @@ class StoreExpenseRequest extends FormRequest
 
     public function rules(): array
     {
+        $config = config('expenses.validation');
+        
         return [
             'expense_date' => ['required', 'date', 'before_or_equal:today'],
-            'description' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'description' => ['required', 'string', 'max:' . $config['description_length']],
+            'amount' => ['required', 'numeric', 'min:' . $config['expense_amount']['min']],
             'currency_id' => ['required', 'exists:currencies,id'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
             'amount_converted' => ['nullable', 'numeric', 'min:0'],
@@ -34,19 +36,19 @@ class StoreExpenseRequest extends FormRequest
                 'exists:cards,id',
                 new \App\Rules\RequiresCardPaymentMethod($this->payment_method_id)
             ],
-            'check_number' => ['nullable', 'string', 'max:50'],
+            'check_number' => ['nullable', 'string', 'max:' . $config['check_number_length']],
             'merchant_id' => ['nullable', 'exists:merchants,id'],
-            'installments' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'installments' => ['nullable', 'integer', 'min:' . $config['installments']['min'], 'max:' . $config['installments']['max']],
             'current_installment' => [
                 'nullable',
                 'integer',
-                'min:1',
+                'min:' . $config['installments']['min'],
                 'lte:installments',
                 new ValidInstallmentNumber($this->installments)
             ],
             'parent_expense_id' => ['nullable', 'exists:expenses,id'],
             'expense_type' => ['required', 'in:fixed,variable,occasional'],
-            'notes' => ['nullable', 'string', 'max:1000'],
+            'notes' => ['nullable', 'string', 'max:' . $config['notes_length']],
             'is_paid' => ['boolean'],
         ];
     }

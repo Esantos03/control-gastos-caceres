@@ -13,6 +13,8 @@ class CardResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'last_digits' => $this->last_digits,
+            'display_name' => $this->display_name,
+            'short_name' => $this->short_name,
             'type' => $this->type,
             'expiration_date' => $this->expiration_date?->format('Y-m-d'),
             'credit_limit' => (float) $this->credit_limit,

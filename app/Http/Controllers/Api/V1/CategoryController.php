@@ -105,7 +105,7 @@ class CategoryController extends Controller
 
         $query->orderBy('expense_date', 'desc');
 
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', config('expenses.pagination.default_per_page'));
         $expenses = $query->paginate($perPage);
 
         return ExpenseResource::collection($expenses);
@@ -125,6 +125,11 @@ class CategoryController extends Controller
         $remaining = $this->budgetService->getRemainingBudget($category->id, $month);
         $exceeded = $this->budgetService->isBudgetExceeded($category->id, $month);
 
+        $thresholds = config('expenses.budget_alerts');
+        $status = $exceeded ? 'exceeded' : 
+                  ($percentage >= $thresholds['warning'] ? 'warning' : 
+                  ($percentage >= $thresholds['caution'] ? 'caution' : 'ok'));
+
         return response()->json([
             'category' => $category->name,
             'budget' => $category->monthly_budget,
@@ -132,7 +137,7 @@ class CategoryController extends Controller
             'remaining' => $remaining,
             'percentage' => $percentage,
             'exceeded' => $exceeded,
-            'status' => $exceeded ? 'exceeded' : ($percentage >= 90 ? 'warning' : ($percentage >= 80 ? 'caution' : 'ok')),
+            'status' => $status,
             'month' => $month->format('Y-m'),
         ]);
     }

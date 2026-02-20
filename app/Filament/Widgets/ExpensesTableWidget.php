@@ -14,7 +14,12 @@ class ExpensesTableWidget extends TableWidget
 
     protected static ?int $sort = 2;
 
-    protected ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = null;
+
+    public function __construct()
+    {
+        $this->pollingInterval = config('expenses.widgets.polling_interval');
+    }
 
     public function table(Table $table): Table
     {
@@ -22,9 +27,10 @@ class ExpensesTableWidget extends TableWidget
             ->query(
                 Expense::query()
                     ->with(['category', 'merchant', 'currency', 'paymentMethod', 'card'])
-                    ->latest('expense_date')
+                    ->latest()
             )
             ->defaultPaginationPageOption(10)
+            ->defaultSort('created_at', 'desc')
             ->recordUrl(
                 fn ($record): string => ExpenseResource::getUrl('edit', ['record' => $record])
             )
@@ -36,7 +42,7 @@ class ExpensesTableWidget extends TableWidget
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descripción')
                     ->searchable()
-                    ->limit(30),
+                    ->limit(config('expenses.widgets.table_description_limit')),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Categoría')
                     ->badge()
@@ -47,21 +53,63 @@ class ExpensesTableWidget extends TableWidget
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Monto')
-                    ->money(fn ($record) => $record->currency->code ?? 'USD')
+                    ->formatStateUsing(function ($record) {
+                        $currencyCode = $record->currency->code ?? 'USD';
+                        $prefix = $currencyCode === 'USD' ? 'USD$' : 'DOP$';
+                        return $prefix . number_format($record->amount, 2);
+                    })
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount_converted')
                     ->label('Monto Convertido')
                     ->money('DOP')
-                    ->sortable(),
+                    ->sortable()
+                    ->state(function ($record) {
+                        // Solo convertir si la moneda es USD
+                        if ($record->currency->code !== 'USD') {
+                            return null;
+                        }
+                        
+                        // Obtener la tasa de cambio más reciente del dólar
+                        $latestRate = \App\Models\ExchangeRate::whereHas('currency', function ($query) {
+                            $query->where('code', 'USD');
+                        })
+                            ->orderBy('year', 'desc')
+                            ->orderBy('month', 'desc')
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                        
+                        if (!$latestRate) {
+                            return null;
+                        }
+                        
+                        // Calcular con la tasa promedio actual
+                        return round($record->amount * $latestRate->average_rate, 2);
+                    })
+                    ->placeholder('N/A'),
                 Tables\Columns\TextColumn::make('paymentMethod.name')
                     ->label('Método de Pago')
                     ->badge()
                     ->color('success'),
-                Tables\Columns\TextColumn::make('card.name')
-                    ->label('Tarjeta')
+                Tables\Columns\TextColumn::make('payment_detail')
+                    ->label('Detalle de Pago')
                     ->badge()
                     ->color('warning')
-                    ->toggleable(),
+                    ->state(function ($record) {
+                        // Si tiene tarjeta, mostrar tarjeta con últimos dígitos
+                        if ($record->card) {
+                            return $record->card->last_digits 
+                                ? "{$record->card->name} ****{$record->card->last_digits}"
+                                : $record->card->name;
+                        }
+                        
+                        // Si tiene número de cheque, mostrarlo
+                        if ($record->check_number) {
+                            return "Cheque: {$record->check_number}";
+                        }
+                        
+                        // Si no tiene ni tarjeta ni cheque, mostrar N/A
+                        return 'N/A';
+                    }),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category_id')

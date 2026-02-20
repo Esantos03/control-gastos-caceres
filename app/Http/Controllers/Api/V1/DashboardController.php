@@ -55,17 +55,35 @@ class DashboardController extends Controller
             ? (($currentStats['total'] - $previousStats['total']) / $previousStats['total']) * 100
             : 0;
 
-        // Gastos por tarjeta
-        $cardExpenses = Card::with('expenses')
+        // Obtener la tasa de cambio más reciente del dólar
+        $dollarRate = \App\Models\ExchangeRate::whereHas('currency', function ($query) {
+            $query->where('code', 'USD');
+        })
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Gastos por tarjeta (solo USD convertidos con tasa actual)
+        $cardExpenses = Card::with(['expenses' => function ($query) use ($currentMonth) {
+            $query->whereYear('expense_date', $currentMonth->year)
+                  ->whereMonth('expense_date', $currentMonth->month)
+                  ->with('currency');
+        }])
             ->get()
-            ->map(function ($card) use ($currentMonth) {
-                $total = $card->expenses()
-                    ->whereYear('expense_date', $currentMonth->year)
-                    ->whereMonth('expense_date', $currentMonth->month)
-                    ->sum('amount_converted');
+            ->map(function ($card) use ($dollarRate) {
+                $total = $card->expenses->sum(function ($expense) use ($dollarRate) {
+                    // Solo convertir gastos en USD
+                    if ($expense->currency->code === 'USD' && $dollarRate) {
+                        return round($expense->amount * $dollarRate->average_rate, 2);
+                    }
+                    return 0;
+                });
 
                 return [
                     'card' => $card->name,
+                    'card_display' => $card->display_name,
+                    'last_digits' => $card->last_digits,
                     'total' => $total,
                     'usage_percentage' => $card->getCreditUsagePercentage(),
                     'limit' => $card->credit_limit,
@@ -74,14 +92,21 @@ class DashboardController extends Controller
             ->filter(fn($item) => $item['total'] > 0)
             ->values();
 
-        // Categorías con mayor gasto
-        $topCategories = Category::with('expenses')
+        // Categorías con mayor gasto (solo USD convertidos con tasa actual)
+        $topCategories = Category::with(['expenses' => function ($query) use ($currentMonth) {
+            $query->whereYear('expense_date', $currentMonth->year)
+                  ->whereMonth('expense_date', $currentMonth->month)
+                  ->with('currency');
+        }])
             ->get()
-            ->map(function ($category) use ($currentMonth) {
-                $total = $category->expenses()
-                    ->whereYear('expense_date', $currentMonth->year)
-                    ->whereMonth('expense_date', $currentMonth->month)
-                    ->sum('amount_converted');
+            ->map(function ($category) use ($currentMonth, $dollarRate) {
+                $total = $category->expenses->sum(function ($expense) use ($dollarRate) {
+                    // Solo convertir gastos en USD
+                    if ($expense->currency->code === 'USD' && $dollarRate) {
+                        return round($expense->amount * $dollarRate->average_rate, 2);
+                    }
+                    return 0;
+                });
 
                 return [
                     'category' => $category->name,
@@ -92,7 +117,7 @@ class DashboardController extends Controller
             })
             ->filter(fn($item) => $item['total'] > 0)
             ->sortByDesc('total')
-            ->take(5)
+            ->take(config('expenses.pagination.dashboard_top_cards'))
             ->values();
 
         return response()->json([
@@ -119,7 +144,7 @@ class DashboardController extends Controller
      */
     public function recentExpenses(Request $request): JsonResponse
     {
-        $limit = $request->get('limit', 10);
+        $limit = $request->get('limit', config('expenses.pagination.dashboard_recent_expenses'));
 
         $expenses = Expense::with(['category', 'subcategory', 'card', 'currency', 'merchant', 'paymentMethod'])
             ->orderBy('expense_date', 'desc')

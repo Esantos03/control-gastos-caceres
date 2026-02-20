@@ -15,7 +15,7 @@ class ExchangeRateService
     {
         $cacheKey = "exchange_rate_{$currencyId}_{$date->year}_{$date->month}_{$type}";
         
-        return Cache::remember($cacheKey, 3600, function () use ($currencyId, $date, $type) {
+        return Cache::remember($cacheKey, config('expenses.cache.exchange_rate_ttl'), function () use ($currencyId, $date, $type) {
             $rate = ExchangeRate::where('currency_id', $currencyId)
                 ->where('year', $date->year)
                 ->where('month', $date->month)
@@ -69,13 +69,13 @@ class ExchangeRateService
     }
 
     /**
-     * Verifica si una moneda es la moneda base (DOP)
+     * Verifica si una moneda es la moneda base
      */
     private function isBaseCurrency(int $currencyId): bool
     {
-        return Cache::remember("currency_is_base_{$currencyId}", 86400, function () use ($currencyId) {
+        return Cache::remember("currency_is_base_{$currencyId}", config('expenses.cache.currency_ttl'), function () use ($currencyId) {
             return \App\Models\Currency::where('id', $currencyId)
-                ->where('code', 'DOP')
+                ->where('code', config('expenses.currency.base'))
                 ->exists();
         });
     }

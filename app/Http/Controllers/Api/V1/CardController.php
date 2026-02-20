@@ -85,7 +85,7 @@ class CardController extends Controller
 
         $query->orderBy('expense_date', 'desc');
 
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', config('expenses.pagination.default_per_page'));
         $expenses = $query->paginate($perPage);
 
         return ExpenseResource::collection($expenses);
@@ -104,6 +104,8 @@ class CardController extends Controller
 
         return response()->json([
             'card' => $card->name,
+            'card_display' => $card->display_name,
+            'last_digits' => $card->last_digits,
             'type' => $card->type,
             'credit_limit' => $card->credit_limit,
             'total_spent' => $total,

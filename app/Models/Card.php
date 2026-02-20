@@ -30,6 +30,11 @@ class Card extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = [
+        'display_name',
+        'short_name',
+    ];
+
     /**
      * Boot del modelo - Agregar Global Scope para multi-tenancy
      */
@@ -104,5 +109,21 @@ class Card extends Model
         }
 
         return $this->getCurrentMonthExpensesTotal() > $this->credit_limit;
+    }
+
+    /**
+     * Obtiene el nombre completo de la tarjeta con los últimos dígitos
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return "{$this->name} ****{$this->last_digits}";
+    }
+
+    /**
+     * Obtiene una representación corta de la tarjeta
+     */
+    public function getShortNameAttribute(): string
+    {
+        return "****{$this->last_digits}";
     }
 }

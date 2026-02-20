@@ -19,13 +19,38 @@ class CardsTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Nombre')
-                    ->searchable(),
-                TextColumn::make('last_digits')
-                    ->label('Últimos Dígitos')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(function ($record) {
+                        if ($record->last_digits) {
+                            return "{$record->name} ****{$record->last_digits}";
+                        }
+                        return $record->name;
+                    })
+                    ->description(fn ($record) => $record->short_name),
                 TextColumn::make('type')
                     ->label('Tipo')
-                    ->badge(),
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'credito' => 'warning',
+                        'debito' => 'success',
+                        default => 'gray',
+                    }),
+                TextColumn::make('credit_limit')
+                    ->label('Límite')
+                    ->money('DOP')
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder('N/A'),
+                TextColumn::make('expiration_date')
+                    ->label('Vencimiento')
+                    ->date('m/Y')
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('is_active')
+                    ->label('Estado')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Activa' : 'Inactiva')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'danger'),
                 TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime('d/m/Y H:i')

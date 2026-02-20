@@ -193,20 +193,66 @@ class ExpenseService
         $startDate = $month->copy()->startOfMonth();
         $endDate = $month->copy()->endOfMonth();
 
+        // Obtener la tasa de cambio más reciente del dólar
+        $dollarRate = \App\Models\ExchangeRate::whereHas('currency', function ($query) {
+            $query->where('code', 'USD');
+        })
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Calcular total solo de gastos en USD convertidos con tasa actual
+        $expenses = Expense::whereBetween('expense_date', [$startDate, $endDate])
+            ->with('currency')
+            ->get();
+
+        $total = $expenses->sum(function ($expense) use ($dollarRate) {
+            // Solo convertir gastos en USD
+            if ($expense->currency->code === 'USD' && $dollarRate) {
+                return round($expense->amount * $dollarRate->average_rate, 2);
+            }
+            return 0;
+        });
+
+        // Gastos por tipo (solo USD)
+        $byType = $expenses->groupBy('expense_type')
+            ->map(function ($typeExpenses) use ($dollarRate) {
+                return $typeExpenses->sum(function ($expense) use ($dollarRate) {
+                    if ($expense->currency->code === 'USD' && $dollarRate) {
+                        return round($expense->amount * $dollarRate->average_rate, 2);
+                    }
+                    return 0;
+                });
+            })
+            ->toArray();
+
+        // Gastos por categoría (solo USD)
+        $byCategory = Expense::whereBetween('expense_date', [$startDate, $endDate])
+            ->with(['category:id,name', 'currency'])
+            ->get()
+            ->groupBy('category_id')
+            ->map(function ($categoryExpenses) use ($dollarRate) {
+                $total = $categoryExpenses->sum(function ($expense) use ($dollarRate) {
+                    if ($expense->currency->code === 'USD' && $dollarRate) {
+                        return round($expense->amount * $dollarRate->average_rate, 2);
+                    }
+                    return 0;
+                });
+                
+                return [
+                    'name' => $categoryExpenses->first()->category->name ?? 'Sin categoría',
+                    'total' => $total
+                ];
+            })
+            ->filter(fn($item) => $item['total'] > 0)
+            ->mapWithKeys(fn($item) => [$item['name'] => $item['total']])
+            ->toArray();
+
         return [
-            'total' => $this->getTotalForPeriod($startDate, $endDate),
-            'by_type' => Expense::whereBetween('expense_date', [$startDate, $endDate])
-                ->selectRaw('expense_type, SUM(amount_converted) as total')
-                ->groupBy('expense_type')
-                ->pluck('total', 'expense_type')
-                ->toArray(),
-            'by_category' => Expense::whereBetween('expense_date', [$startDate, $endDate])
-                ->with('category:id,name')
-                ->selectRaw('category_id, SUM(amount_converted) as total')
-                ->groupBy('category_id')
-                ->get()
-                ->mapWithKeys(fn($item) => [$item->category->name => $item->total])
-                ->toArray(),
+            'total' => $total,
+            'by_type' => $byType,
+            'by_category' => $byCategory,
             'count' => Expense::whereBetween('expense_date', [$startDate, $endDate])->count(),
         ];
     }

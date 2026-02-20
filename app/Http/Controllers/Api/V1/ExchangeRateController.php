@@ -38,7 +38,7 @@ class ExchangeRateController extends Controller
 
         $query->orderBy('year', 'desc')->orderBy('month', 'desc');
 
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', config('expenses.pagination.default_per_page'));
         $exchangeRates = $query->paginate($perPage);
 
         return ExchangeRateResource::collection($exchangeRates);

@@ -34,7 +34,7 @@ class BudgetService
     {
         $cacheKey = "budget_spent_{$categoryId}_{$month->year}_{$month->month}";
 
-        return Cache::remember($cacheKey, 300, function () use ($categoryId, $month) {
+        return Cache::remember($cacheKey, config('expenses.cache.budget_ttl'), function () use ($categoryId, $month) {
             return Expense::where('category_id', $categoryId)
                 ->whereYear('expense_date', $month->year)
                 ->whereMonth('expense_date', $month->month)
@@ -90,12 +90,13 @@ class BudgetService
 
             $percentage = $this->getBudgetUsagePercentage($categoryId);
 
-            // Alertas en 80%, 90% y 100%
-            if ($percentage >= 100) {
+            // Alertas configurables
+            $thresholds = config('expenses.budget_alerts');
+            if ($percentage >= $thresholds['exceeded']) {
                 $this->sendBudgetAlert($category, 'exceeded', $percentage);
-            } elseif ($percentage >= 90) {
+            } elseif ($percentage >= $thresholds['warning']) {
                 $this->sendBudgetAlert($category, 'warning', $percentage);
-            } elseif ($percentage >= 80) {
+            } elseif ($percentage >= $thresholds['caution']) {
                 $this->sendBudgetAlert($category, 'caution', $percentage);
             }
         } catch (\Exception $e) {
@@ -155,10 +156,11 @@ class BudgetService
      */
     private function getBudgetStatus(float $percentage): string
     {
+        $thresholds = config('expenses.budget_alerts');
         return match(true) {
-            $percentage >= 100 => 'exceeded',
-            $percentage >= 90 => 'warning',
-            $percentage >= 80 => 'caution',
+            $percentage >= $thresholds['exceeded'] => 'exceeded',
+            $percentage >= $thresholds['warning'] => 'warning',
+            $percentage >= $thresholds['caution'] => 'caution',
             default => 'ok',
         };
     }

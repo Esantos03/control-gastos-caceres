@@ -148,16 +148,16 @@ class ExpenseForm
                 TextInput::make('installments')
                     ->label('Número de Cuotas')
                     ->numeric()
-                    ->default(1)
-                    ->minValue(1)
-                    ->maxValue(60)
+                    ->default(config('expenses.validation.installments.min'))
+                    ->minValue(config('expenses.validation.installments.min'))
+                    ->maxValue(config('expenses.validation.installments.max'))
                     ->helperText('Total de cuotas del gasto'),
                 
                 TextInput::make('current_installment')
                     ->label('Cuota Actual')
                     ->numeric()
-                    ->default(1)
-                    ->minValue(1)
+                    ->default(config('expenses.validation.installments.min'))
+                    ->minValue(config('expenses.validation.installments.min'))
                     ->helperText('Número de la cuota actual'),
                 
                 Select::make('parent_expense_id')

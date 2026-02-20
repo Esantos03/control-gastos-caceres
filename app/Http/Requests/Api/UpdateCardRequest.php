@@ -14,18 +14,20 @@ class UpdateCardRequest extends FormRequest
 
     public function rules(): array
     {
+        $config = config('expenses.validation');
+        
         return [
-            'name' => ['sometimes', 'string', 'max:255'],
-            'last_digits' => ['nullable', 'string', 'max:4'],
+            'name' => ['sometimes', 'string', 'max:' . $config['description_length']],
+            'last_digits' => ['nullable', 'string', 'max:' . $config['card_last_digits']],
             'type' => ['sometimes', 'in:credito,debito'],
             'expiration_date' => ['nullable', 'date', 'after:today'],
             'credit_limit' => ['nullable', 'numeric', 'min:0'],
-            'billing_day' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'billing_day' => ['nullable', 'integer', 'min:' . $config['billing_day']['min'], 'max:' . $config['billing_day']['max']],
             'payment_day' => [
                 'nullable',
                 'integer',
-                'min:1',
-                'max:31',
+                'min:' . $config['payment_day']['min'],
+                'max:' . $config['payment_day']['max'],
                 new ValidBillingCycle($this->billing_day ?? $this->route('card')->billing_day)
             ],
             'is_active' => ['boolean'],

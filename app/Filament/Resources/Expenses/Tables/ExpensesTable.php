@@ -24,10 +24,14 @@ class ExpensesTable
                 TextColumn::make('description')
                     ->label('Descripción')
                     ->searchable()
-                    ->limit(40),
+                    ->limit(config('expenses.widgets.expense_table_limit')),
                 TextColumn::make('amount')
                     ->label('Monto')
-                    ->money(fn ($record) => $record->currency->code ?? 'USD')
+                    ->formatStateUsing(function ($record) {
+                        $currencyCode = $record->currency->code ?? 'USD';
+                        $prefix = $currencyCode === 'USD' ? 'USD$' : 'DOP$';
+                        return $prefix . number_format($record->amount, 2);
+                    })
                     ->sortable(),
                 TextColumn::make('currency.name')
                     ->label('Moneda')
@@ -41,7 +45,30 @@ class ExpensesTable
                 TextColumn::make('amount_converted')
                     ->label('Monto Convertido')
                     ->money('DOP')
-                    ->sortable(),
+                    ->sortable()
+                    ->state(function ($record) {
+                        // Solo convertir si la moneda es USD
+                        if ($record->currency->code !== 'USD') {
+                            return null;
+                        }
+                        
+                        // Obtener la tasa de cambio más reciente del dólar
+                        $latestRate = \App\Models\ExchangeRate::whereHas('currency', function ($query) {
+                            $query->where('code', 'USD');
+                        })
+                            ->orderBy('year', 'desc')
+                            ->orderBy('month', 'desc')
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+                        
+                        if (!$latestRate) {
+                            return null;
+                        }
+                        
+                        // Calcular con la tasa promedio actual
+                        return round($record->amount * $latestRate->average_rate, 2);
+                    })
+                    ->placeholder('N/A'),
                 TextColumn::make('category.name')
                     ->label('Categoría')
                     ->badge()
@@ -55,18 +82,27 @@ class ExpensesTable
                     ->badge()
                     ->color('success')
                     ->searchable(),
-                TextColumn::make('card.name')
-                    ->label('Tarjeta')
+                TextColumn::make('payment_detail')
+                    ->label('Detalle de Pago')
                     ->badge()
                     ->color('warning')
                     ->searchable()
-                    ->toggleable()
-                    ->placeholder('N/A'),
-                TextColumn::make('check_number')
-                    ->label('No. de Cheque')
-                    ->searchable()
-                    ->toggleable()
-                    ->placeholder('N/A'),
+                    ->state(function ($record) {
+                        // Si tiene tarjeta, mostrar tarjeta con últimos dígitos
+                        if ($record->card) {
+                            return $record->card->last_digits 
+                                ? "{$record->card->name} ****{$record->card->last_digits}"
+                                : $record->card->name;
+                        }
+                        
+                        // Si tiene número de cheque, mostrarlo
+                        if ($record->check_number) {
+                            return "Cheque: {$record->check_number}";
+                        }
+                        
+                        // Si no tiene ni tarjeta ni cheque, mostrar N/A
+                        return 'N/A';
+                    }),
                 TextColumn::make('merchant.name')
                     ->label('Comercio')
                     ->searchable()

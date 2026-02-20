@@ -14,6 +14,8 @@ class StoreExchangeRateRequest extends FormRequest
 
     public function rules(): array
     {
+        $config = config('expenses.validation');
+        
         return [
             'currency_id' => [
                 'required',
@@ -23,8 +25,8 @@ class StoreExchangeRateRequest extends FormRequest
                                  ->where('year', $this->year);
                 })
             ],
-            'month' => ['required', 'integer', 'min:1', 'max:12'],
-            'year' => ['required', 'integer', 'min:2000', 'max:2100'],
+            'month' => ['required', 'integer', 'min:' . $config['exchange_rate']['month']['min'], 'max:' . $config['exchange_rate']['month']['max']],
+            'year' => ['required', 'integer', 'min:' . $config['exchange_rate']['year']['min'], 'max:' . $config['exchange_rate']['year']['max']],
             'buy_rate' => ['required', 'numeric', 'min:0'],
             'sell_rate' => ['required', 'numeric', 'min:0'],
             'average_rate' => ['required', 'numeric', 'min:0'],

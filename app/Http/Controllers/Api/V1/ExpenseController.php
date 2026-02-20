@@ -65,7 +65,7 @@ class ExpenseController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $perPage = $request->get('per_page', 15);
+        $perPage = $request->get('per_page', config('expenses.pagination.default_per_page'));
         $expenses = $query->paginate($perPage);
 
         return ExpenseResource::collection($expenses);
@@ -79,7 +79,23 @@ class ExpenseController extends Controller
         $this->authorize('create', Expense::class);
 
         try {
+            // Log para debugging - ver qué datos llegan
+            Log::info('Creating expense from API', [
+                'user_id' => auth()->id(),
+                'request_data' => $request->all(),
+                'validated_data' => $request->validated(),
+                'card_id_in_request' => $request->input('card_id'),
+                'card_id_type' => gettype($request->input('card_id')),
+            ]);
+
             $expense = $this->expenseService->create($request->validated());
+
+            // Log después de crear
+            Log::info('Expense created', [
+                'expense_id' => $expense->id,
+                'card_id_saved' => $expense->card_id,
+                'has_card_relation' => $expense->card !== null,
+            ]);
 
             return response()->json([
                 'message' => 'Gasto creado exitosamente',

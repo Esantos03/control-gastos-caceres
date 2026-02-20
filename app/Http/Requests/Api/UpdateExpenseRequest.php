@@ -15,9 +15,11 @@ class UpdateExpenseRequest extends FormRequest
 
     public function rules(): array
     {
+        $config = config('expenses.validation');
+        
         return [
             'expense_date' => ['sometimes', 'date'],
-            'description' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'string', 'max:' . $config['description_length']],
             'amount' => ['sometimes', 'numeric', 'min:0'],
             'currency_id' => ['sometimes', 'exists:currencies,id'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0'],
@@ -30,13 +32,13 @@ class UpdateExpenseRequest extends FormRequest
             ],
             'payment_method_id' => ['sometimes', 'exists:payment_methods,id'],
             'card_id' => ['nullable', 'exists:cards,id'],
-            'check_number' => ['nullable', 'string', 'max:50'],
+            'check_number' => ['nullable', 'string', 'max:' . $config['check_number_length']],
             'merchant_id' => ['nullable', 'exists:merchants,id'],
-            'installments' => ['sometimes', 'integer', 'min:1', 'max:60'],
+            'installments' => ['sometimes', 'integer', 'min:' . $config['installments']['min'], 'max:' . $config['installments']['max']],
             'current_installment' => [
                 'nullable',
                 'integer',
-                'min:1',
+                'min:' . $config['installments']['min'],
                 new ValidInstallmentNumber($this->installments ?? $this->route('expense')->installments)
             ],
             'expense_type' => ['sometimes', 'in:fijo,variable,ocasional'],

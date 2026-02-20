@@ -98,6 +98,8 @@ class ReportController extends Controller
             
             return [
                 'card' => $card->name,
+                'card_display' => $card->display_name,
+                'last_digits' => $card->last_digits,
                 'type' => $card->type,
                 'credit_limit' => $card->credit_limit,
                 'total' => $expenses->sum('amount_converted'),
@@ -185,11 +187,11 @@ class ReportController extends Controller
     }
 
     /**
-     * Tendencias (últimos 6 meses)
+     * Tendencias (últimos meses configurables)
      */
     public function trends(Request $request): JsonResponse
     {
-        $months = $request->get('months', 6);
+        $months = $request->get('months', config('expenses.reports.default_trend_months'));
         $trends = [];
 
         for ($i = $months - 1; $i >= 0; $i--) {

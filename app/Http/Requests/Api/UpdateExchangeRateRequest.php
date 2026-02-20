@@ -13,10 +13,12 @@ class UpdateExchangeRateRequest extends FormRequest
 
     public function rules(): array
     {
+        $config = config('expenses.validation');
+        
         return [
             'currency_id' => ['sometimes', 'exists:currencies,id'],
-            'month' => ['sometimes', 'integer', 'min:1', 'max:12'],
-            'year' => ['sometimes', 'integer', 'min:2000', 'max:2100'],
+            'month' => ['sometimes', 'integer', 'min:' . $config['exchange_rate']['month']['min'], 'max:' . $config['exchange_rate']['month']['max']],
+            'year' => ['sometimes', 'integer', 'min:' . $config['exchange_rate']['year']['min'], 'max:' . $config['exchange_rate']['year']['max']],
             'buy_rate' => ['sometimes', 'numeric', 'min:0'],
             'sell_rate' => ['sometimes', 'numeric', 'min:0'],
             'average_rate' => ['sometimes', 'numeric', 'min:0'],

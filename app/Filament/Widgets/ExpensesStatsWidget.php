@@ -9,7 +9,12 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class ExpensesStatsWidget extends StatsOverviewWidget
 {
-    protected ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = null;
+
+    public function __construct()
+    {
+        $this->pollingInterval = config('expenses.widgets.polling_interval');
+    }
 
     protected function getStats(): array
     {
@@ -21,23 +26,7 @@ class ExpensesStatsWidget extends StatsOverviewWidget
             ->whereYear('expense_date', $currentYear)
             ->count();
 
-        // Gastos por tarjetas del mes actual
-        $expensesByCard = Expense::whereMonth('expense_date', $currentMonth)
-            ->whereYear('expense_date', $currentYear)
-            ->whereNotNull('card_id')
-            ->with('card')
-            ->get()
-            ->groupBy('card_id')
-            ->map(function ($expenses) {
-                return [
-                    'card' => $expenses->first()->card->name ?? 'Sin tarjeta',
-                    'total' => $expenses->sum('amount_converted'),
-                ];
-            })
-            ->sortByDesc('total')
-            ->take(3);
-
-        // Última tasa de cambio del dólar (la más reciente creada)
+        // Obtener la tasa de cambio más reciente del dólar
         $dollarRate = ExchangeRate::whereHas('currency', function ($query) {
             $query->where('code', 'USD');
         })
@@ -45,6 +34,31 @@ class ExpensesStatsWidget extends StatsOverviewWidget
             ->orderBy('month', 'desc')
             ->orderBy('created_at', 'desc')
             ->first();
+
+        // Gastos por tarjetas del mes actual (solo USD convertidos con tasa actual)
+        $expensesByCard = Expense::whereMonth('expense_date', $currentMonth)
+            ->whereYear('expense_date', $currentYear)
+            ->whereNotNull('card_id')
+            ->with(['card', 'currency'])
+            ->get()
+            ->groupBy('card_id')
+            ->map(function ($expenses) use ($dollarRate) {
+                $total = $expenses->sum(function ($expense) use ($dollarRate) {
+                    // Solo convertir gastos en USD
+                    if ($expense->currency->code === 'USD' && $dollarRate) {
+                        return round($expense->amount * $dollarRate->average_rate, 2);
+                    }
+                    return 0;
+                });
+                
+                return [
+                    'card' => $expenses->first()->card->name ?? 'Sin tarjeta',
+                    'total' => $total,
+                ];
+            })
+            ->filter(fn($item) => $item['total'] > 0) // Solo mostrar tarjetas con gastos en USD
+            ->sortByDesc('total')
+            ->take(config('expenses.pagination.widget_top_cards'));
 
         $stats = [];
 
@@ -60,7 +74,7 @@ class ExpensesStatsWidget extends StatsOverviewWidget
                 return $item['card'] . ': $' . number_format($item['total'], 2);
             })->join(' | ');
 
-            $stats[] = Stat::make('Gastos por Tarjetas', '$' . number_format($expensesByCard->sum('total'), 2))
+            $stats[] = Stat::make('Gastos por Tarjetas (USD)', '$' . number_format($expensesByCard->sum('total'), 2))
                 ->description($cardDescription)
                 ->descriptionIcon('heroicon-m-credit-card')
                 ->color('warning');

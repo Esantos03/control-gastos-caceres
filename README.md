@@ -2,8 +2,6 @@
 
 Sistema avanzado de control de gastos personales desarrollado con Laravel 12 y Filament 5. Diseñado para replicar y mejorar la funcionalidad de hojas de cálculo Excel con una interfaz moderna y funcionalidades automatizadas.
 
-> ⚠️ **IMPORTANTE:** Este proyecto requiere implementar mejoras críticas antes de usar en producción. Ver [MEJORAS_PRIORITARIAS.md](MEJORAS_PRIORITARIAS.md)
-
 ## ✨ Características Principales
 
 ### 📊 Gestión de Gastos
@@ -107,17 +105,9 @@ Abrir navegador en: `http://localhost:8000/admin`
 
 ## 📚 Documentación
 
-### Documentación Principal
-- **[README.md](README.md)** - Este archivo (guía de inicio rápido)
-- **[MEJORAS_PRIORITARIAS.md](MEJORAS_PRIORITARIAS.md)** - ⚠️ Mejoras críticas a implementar
-- **[ANALISIS_Y_RECOMENDACIONES_FINAL.md](ANALISIS_Y_RECOMENDACIONES_FINAL.md)** - Análisis completo y recomendaciones
-- **[CHANGELOG.md](CHANGELOG.md)** - Historial de cambios
-
-### Documentación Técnica
+- **[README.md](README.md)** - Guía de inicio rápido
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Documentación completa de la API REST
-- **[FILAMENT_SETUP.md](FILAMENT_SETUP.md)** - Configuración de Filament
-- **[ANALISIS_EXCEL.md](ANALISIS_EXCEL.md)** - Análisis del Excel original
-- **[MEJORAS_IMPLEMENTADAS.md](MEJORAS_IMPLEMENTADAS.md)** - Historial de mejoras implementadas
+- **[CHANGELOG.md](CHANGELOG.md)** - Historial de cambios
 
 ## 🏗️ Arquitectura
 
@@ -231,25 +221,7 @@ Las tasas de cambio y estadísticas se cachean para mejorar el rendimiento.
 - ✅ Autenticación con Laravel Sanctum
 - ✅ Validaciones básicas en formularios
 
-### ⚠️ Pendiente (CRÍTICO)
-- ❌ **Multi-tenancy** - Sin aislamiento de datos por usuario
-- ❌ **Policies** - Sin control de autorización
-- ❌ **Rate Limiting** - Sin límite de peticiones API
-- ❌ **Audit Logs** - Sin registro de cambios
-- ❌ **Encryption** - Datos sensibles sin encriptar
-
-> 🔴 **NO USAR EN PRODUCCIÓN** hasta implementar mejoras de seguridad críticas
-
 ## 🚧 Roadmap
-
-### ⚠️ Fase 0 - CRÍTICA (Semana 1-2)
-- [ ] **Multi-tenancy** - Agregar user_id a todas las tablas
-- [ ] **Políticas de autorización** - Implementar Policies
-- [ ] **Conversión automática** - Calcular exchange_rate automáticamente
-- [ ] **Validaciones robustas** - Validar relaciones entre entidades
-- [ ] **Manejo de errores** - Logs detallados y mensajes amigables
-
-> 📖 Ver [MEJORAS_PRIORITARIAS.md](MEJORAS_PRIORITARIAS.md) para detalles de implementación
 
 ### Fase 1 - Completada ✅
 - [x] Estructura base con Laravel y Filament
@@ -260,7 +232,7 @@ Las tasas de cambio y estadísticas se cachean para mejorar el rendimiento.
 - [x] API REST básica
 - [x] Tests unitarios básicos
 
-### Fase 2 - Planificado (Semana 3-4)
+### Fase 2 - Planificado
 - [ ] Sistema de notificaciones
 - [ ] Dashboard mejorado con gráficos
 - [ ] Reportes avanzados
@@ -268,7 +240,7 @@ Las tasas de cambio y estadísticas se cachean para mejorar el rendimiento.
 - [ ] Cache estratégico
 - [ ] Optimización de queries
 
-### Fase 3 - Futuro (Semana 5-6)
+### Fase 3 - Futuro
 - [ ] Tests completos (80%+ cobertura)
 - [ ] Eventos y Listeners
 - [ ] Importación desde Excel
