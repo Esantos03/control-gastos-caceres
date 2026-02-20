@@ -210,7 +210,7 @@ class ExpenseService
         $total = $expenses->sum(function ($expense) use ($dollarRate) {
             // Solo convertir gastos en USD
             if ($expense->currency->code === 'USD' && $dollarRate) {
-                return round($expense->amount * $dollarRate->average_rate, 2);
+                return round($expense->amount * $dollarRate->sell_rate, 2);
             }
             return 0;
         });
@@ -220,7 +220,7 @@ class ExpenseService
             ->map(function ($typeExpenses) use ($dollarRate) {
                 return $typeExpenses->sum(function ($expense) use ($dollarRate) {
                     if ($expense->currency->code === 'USD' && $dollarRate) {
-                        return round($expense->amount * $dollarRate->average_rate, 2);
+                        return round($expense->amount * $dollarRate->sell_rate, 2);
                     }
                     return 0;
                 });
@@ -235,7 +235,7 @@ class ExpenseService
             ->map(function ($categoryExpenses) use ($dollarRate) {
                 $total = $categoryExpenses->sum(function ($expense) use ($dollarRate) {
                     if ($expense->currency->code === 'USD' && $dollarRate) {
-                        return round($expense->amount * $dollarRate->average_rate, 2);
+                        return round($expense->amount * $dollarRate->sell_rate, 2);
                     }
                     return 0;
                 });

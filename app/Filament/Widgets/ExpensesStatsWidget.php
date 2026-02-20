@@ -35,31 +35,6 @@ class ExpensesStatsWidget extends StatsOverviewWidget
             ->orderBy('created_at', 'desc')
             ->first();
 
-        // Gastos por tarjetas del mes actual (solo USD convertidos con tasa actual)
-        $expensesByCard = Expense::whereMonth('expense_date', $currentMonth)
-            ->whereYear('expense_date', $currentYear)
-            ->whereNotNull('card_id')
-            ->with(['card', 'currency'])
-            ->get()
-            ->groupBy('card_id')
-            ->map(function ($expenses) use ($dollarRate) {
-                $total = $expenses->sum(function ($expense) use ($dollarRate) {
-                    // Solo convertir gastos en USD
-                    if ($expense->currency->code === 'USD' && $dollarRate) {
-                        return round($expense->amount * $dollarRate->average_rate, 2);
-                    }
-                    return 0;
-                });
-                
-                return [
-                    'card' => $expenses->first()->card->name ?? 'Sin tarjeta',
-                    'total' => $total,
-                ];
-            })
-            ->filter(fn($item) => $item['total'] > 0) // Solo mostrar tarjetas con gastos en USD
-            ->sortByDesc('total')
-            ->take(config('expenses.pagination.widget_top_cards'));
-
         $stats = [];
 
         // Stat: Total de gastos
@@ -67,18 +42,6 @@ class ExpensesStatsWidget extends StatsOverviewWidget
             ->description('Gastos registrados este mes')
             ->descriptionIcon('heroicon-m-shopping-cart')
             ->color('success');
-
-        // Stat: Gastos por tarjetas
-        if ($expensesByCard->isNotEmpty()) {
-            $cardDescription = $expensesByCard->map(function ($item) {
-                return $item['card'] . ': $' . number_format($item['total'], 2);
-            })->join(' | ');
-
-            $stats[] = Stat::make('Gastos por Tarjetas (USD)', '$' . number_format($expensesByCard->sum('total'), 2))
-                ->description($cardDescription)
-                ->descriptionIcon('heroicon-m-credit-card')
-                ->color('warning');
-        }
 
         // Stat: Tasa del dólar (última registrada)
         if ($dollarRate) {

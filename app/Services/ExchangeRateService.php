@@ -11,7 +11,7 @@ class ExchangeRateService
     /**
      * Obtiene la tasa de cambio para una moneda y fecha específica
      */
-    public function getRate(int $currencyId, Carbon $date, string $type = 'average'): ?float
+    public function getRate(int $currencyId, Carbon $date, string $type = 'sell'): ?float
     {
         $cacheKey = "exchange_rate_{$currencyId}_{$date->year}_{$date->month}_{$type}";
         
@@ -33,7 +33,8 @@ class ExchangeRateService
             return match($type) {
                 'buy' => $rate->buy_rate,
                 'sell' => $rate->sell_rate,
-                default => $rate->average_rate,
+                'average' => $rate->average_rate,
+                default => $rate->sell_rate,
             };
         });
     }
@@ -52,7 +53,7 @@ class ExchangeRateService
     /**
      * Convierte un monto de una moneda a otra
      */
-    public function convert(float $amount, int $fromCurrencyId, Carbon $date, string $rateType = 'average'): float
+    public function convert(float $amount, int $fromCurrencyId, Carbon $date, string $rateType = 'sell'): float
     {
         // Si es DOP (moneda base), no convertir
         if ($this->isBaseCurrency($fromCurrencyId)) {

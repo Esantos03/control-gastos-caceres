@@ -75,7 +75,7 @@ class DashboardController extends Controller
                 $total = $card->expenses->sum(function ($expense) use ($dollarRate) {
                     // Solo convertir gastos en USD
                     if ($expense->currency->code === 'USD' && $dollarRate) {
-                        return round($expense->amount * $dollarRate->average_rate, 2);
+                        return round($expense->amount * $dollarRate->sell_rate, 2);
                     }
                     return 0;
                 });
@@ -103,7 +103,7 @@ class DashboardController extends Controller
                 $total = $category->expenses->sum(function ($expense) use ($dollarRate) {
                     // Solo convertir gastos en USD
                     if ($expense->currency->code === 'USD' && $dollarRate) {
-                        return round($expense->amount * $dollarRate->average_rate, 2);
+                        return round($expense->amount * $dollarRate->sell_rate, 2);
                     }
                     return 0;
                 });

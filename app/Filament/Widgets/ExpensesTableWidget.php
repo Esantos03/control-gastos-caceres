@@ -82,8 +82,8 @@ class ExpensesTableWidget extends TableWidget
                             return null;
                         }
                         
-                        // Calcular con la tasa promedio actual
-                        return round($record->amount * $latestRate->average_rate, 2);
+                        // Calcular con la tasa de venta actual
+                        return round($record->amount * $latestRate->sell_rate, 2);
                     })
                     ->placeholder('N/A'),
                 Tables\Columns\TextColumn::make('paymentMethod.name')

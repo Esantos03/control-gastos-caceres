@@ -21,7 +21,7 @@ class ExpenseResource extends JsonResource
                 ->first();
             
             if ($latestRate) {
-                $amountConverted = round($this->amount * $latestRate->average_rate, 2);
+                $amountConverted = round($this->amount * $latestRate->sell_rate, 2);
             }
         }
 
